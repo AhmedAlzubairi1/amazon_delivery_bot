@@ -1,3 +1,4 @@
+// These are the pins setup for the motors
 int topLeftWheelPin1 = 27;     //motor1 
 int topLeftWheelPin2 = 26;    //motor1
 int topRightWheelPin1 = 25;     //motor2 
@@ -6,15 +7,20 @@ int bottomLeftWheelPin1 = 18;     //motor3 yellow
 int bottomLeftWheelPin2 = 19;    //motor  3
 int bottomRightWheelPin1 = 22; // Motor 4
 int bottomRightWheelPin2 = 23; // Motor 4
+
+//This is a variable to keep track of the last command the rc car was at
 int last=0; // Last motion. 0 means stop, 1 means forward, 2 means back, 3 means left, 4 means right
+//Source of how i used the motors is here:
 //https://create.arduino.cc/projecthub/ryanchan/how-to-use-the-l298n-motor-driver-b124c5
-// wwatch the video  attached
+
+// Set up for ultrasonic sensors
 #include <UltrasonicSensor.h>
 UltrasonicSensor ultrasonic(12,14);
+// Set up for the peizzo buzzers
 int buzzerPin=13;
 bool inStop= false;
 
-//This is the remote stuff from exxample sketch
+//This is the remote controller setup code stuff from exxample sketch
 #include <Arduino.h>
 //NOTE BUG: I need to install this h file, but not the latest version, the one before it
 #include <IRremoteESP8266.h>
@@ -27,7 +33,7 @@ decode_results results;       // Create a decoding results class object
 //
 
 
-//This is for the 8 digit led:
+//This is for the 7 sement LED code from the example sketch:
 int dataPin = 15;          // Pin connected to DS of 74HC595（Pin14）
 int latchPin = 2;          // Pin connected to ST_CP of 74HC595（Pin12）
 int clockPin = 4;          // Pin connected to SH_CP of 74HC595（Pin11）
@@ -38,14 +44,16 @@ byte num[] = {
   0x80, 0x90
 };
 
+//This is to remember if user is in isLooking mode
 bool isLooking=false;
 
+// This is the set up for the servers
 #include <ESP32Servo.h>
 Servo rightServo;
 Servo leftServo;
 
 void setup() {
-  //Attach servos
+  //Attach servos and set to 90 degrees
   rightServo.setPeriodHertz(50);
   rightServo.attach(5,500,2500);
   leftServo.setPeriodHertz(50);
@@ -84,18 +92,17 @@ void loop() {
    //forward();
 
    distance = (double)ultrasonic.distanceInCentimeters() *  0.39370;
-//   Serial.printf("Distance is: %din\n",distance);
+   Serial.printf("Distance is: %din\n",distance);
    if (distance<=10 and distance>=0){
-  //  Serial.printf("Showing %d\n",distance);
     writeDataLED(num[distance]);
     
    }
    else{
-   // Serial.printf("Turn off \n");
+    //This is to clear the 7 segment led if I am not within distance
     writeDataLED(0xff);
    }
    
-   
+   //Check for remote communication
    if (irrecv.decode(&results)) {          // Waiting for decoding
       serialPrintUint64(results.value, HEX);// Print out the decoded results
       Serial.println("");
@@ -106,38 +113,22 @@ void loop() {
     else{
       //stopWheels();
     }
+    // If in find mode, do look() method
     if (isLooking){
       look();
     }
-   /*
-   // This is to just print out the LED lights in sequence
-   for (int i = 0; i < 10; i++) {
-    writeDataLED(num[i]);// Send data to 74HC595
-    delay(1000);      // delay 1 second
-    writeDataLED(0xff);  // Clear the display content
-  }
-  delay(1000);   
-  */
-  //delay(1000);
-  
+   
 }
 void look(){
+//Keep turning right until bot sinces object within 9 inches
   if(distance>9){
     right();
     inStop=false;
   }
   else{
-    // I should stop if i find it. 
+    // I should stop if i find object
     stopWheels();
-    /*
-    if(inStop){
-      forward(); 
-    }
-    else{
-      stopWheels();
-      inStop=true;
-    }
-    */
+  
   }
 
   
@@ -217,6 +208,7 @@ void buzzer(boolean turnOn){
     digitalWrite(buzzerPin,LOW);
   }
 }
+//This is to keep track of the last motion to be used to continue the motion
 void lastMotion(){
   if (last==1){
     forward();
@@ -235,7 +227,7 @@ void lastMotion(){
   }
 }
 //This code was taking from example. The mechaism to control the remote that is. 
-//NOTE: Have the Reciever exposed so it is clear the signal can go to it.
+//NOTE: Have the Reciever clearly exposed so it is clear the signal can go to it.
 void handleControl(unsigned long value) {
   // Make a sound when it rereives commands
   // Handle the commands
@@ -302,8 +294,7 @@ void handleControl(unsigned long value) {
       delay(200);
       stopWheels();
       break;
-
-    
+    //If i get weird communication, should just do last motion method
     default:
         if (!isLooking){
           lastMotion();
@@ -311,7 +302,6 @@ void handleControl(unsigned long value) {
   }
 }
 //This is to write to led. SOURCED from example sketch
-//writeData(0xff);  // Clear the display content
 void writeDataLED(int value) {
   // Make latchPin output low level
   digitalWrite(latchPin, LOW);
@@ -321,24 +311,14 @@ void writeDataLED(int value) {
   digitalWrite(latchPin, HIGH);
 }
 void openGate(){
+  //Set the servo angel to drop the crane
   Serial.println("Open");
   leftServo.write(90);
   rightServo.write(90);
   
 }
 void closeGate(){
-  /*
-  int temp=10;
-  //60,120
-  while (temp<40){
-  leftServo.write(90-temp);
-  rightServo.write(90+temp);
-  // Add delay so it doesnt close too fast
-  delay(200);
-  temp+=10;
-   
-  }
-  */
+//Set servo angel to lift the crane
   Serial.println("Close");
   leftServo.write(60);
   rightServo.write(120);
