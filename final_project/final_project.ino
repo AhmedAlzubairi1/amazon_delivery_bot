@@ -38,7 +38,7 @@ byte num[] = {
   0x80, 0x90
 };
 
-bool combatMode=false;
+bool isLooking=false;
 
 #include <ESP32Servo.h>
 Servo rightServo;
@@ -106,8 +106,8 @@ void loop() {
     else{
       //stopWheels();
     }
-    if (combatMode){
-      combat();
+    if (isLooking){
+      look();
     }
    /*
    // This is to just print out the LED lights in sequence
@@ -121,7 +121,7 @@ void loop() {
   //delay(1000);
   
 }
-void combat(){
+void look(){
   if(distance>9){
     right();
     inStop=false;
@@ -244,30 +244,30 @@ void handleControl(unsigned long value) {
   buzzer(false);
   switch (value) {
     case 0xFF02FD:// Pressed +
-      combatMode=false;
+      isLooking=false;
       forward();
       break;
     case 0xFFE01F:              // Pressed reverse
-      combatMode=false;
+      isLooking=false;
       left();
       break;
     case 0xFF9867:              // Pressed -
-      combatMode=false;
+      isLooking=false;
       backward();
       break;
     case 0xFF906F:              // Pressed forward
-      combatMode=false;
+      isLooking=false;
       right();
       break;
     case 0xFFA857: // Pressed play
-      combatMode=false;
+      isLooking=false;
       stopWheels();
       break;
-    case 0xFFA25D: // This is for combat, press power button
-      combatMode=!combatMode;
+    case 0xFFA25D: // This is for look, press power button
+      isLooking=!isLooking;
       inStop=false;
       //If i turned it off, stop the wheels
-      if (!combatMode){
+      if (!isLooking){
         stopWheels();
       }
       break;
@@ -279,25 +279,25 @@ void handleControl(unsigned long value) {
      break;
     // These are the slow directions:
     case 0xFF18E7: //pressed 2, so slow forward
-      combatMode=false;
+      isLooking=false;
       forward();
       delay(200);
       stopWheels();
       break;
     case 0xFF10EF: // Pressed 4, so slow left
-      combatMode=false;
+      isLooking=false;
       left();
       delay(200);
       stopWheels();
       break;
    case 0xFF4AB5: // Pressed 8, so slow back
-      combatMode=false;
+      isLooking=false;
       backward();
       delay(200);
       stopWheels();
       break;
   case 0xFF5AA5: // Pressed 6, so slow right
-      combatMode=false;
+      isLooking=false;
       right();
       delay(200);
       stopWheels();
@@ -305,7 +305,7 @@ void handleControl(unsigned long value) {
 
     
     default:
-        if (!combatMode){
+        if (!isLooking){
           lastMotion();
         }
   }
