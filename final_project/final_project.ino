@@ -12,7 +12,7 @@ int last=0; // Last motion. 0 means stop, 1 means forward, 2 means back, 3 means
 #include <UltrasonicSensor.h>
 UltrasonicSensor ultrasonic(12,14);
 int buzzerPin=13;
-
+bool inStop= false;
 
 //This is the remote stuff from exxample sketch
 #include <Arduino.h>
@@ -38,6 +38,8 @@ byte num[] = {
   0x80, 0x90
 };
 
+bool combatMode=false;
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -60,14 +62,23 @@ void setup() {
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
 }
-
+int distance = 0;
 void loop() {
   // put your main code here, to run repeatedly:
 
    //forward();
 
-   int distance = ultrasonic.distanceInCentimeters();
-   //Serial.printf("Distance is: %dcm\n",distance);
+   distance = (double)ultrasonic.distanceInCentimeters() *  0.39370;
+   Serial.printf("Distance is: %din\n",distance);
+   if (distance<=10 and distance>=0){
+    Serial.printf("Showing %d\n",distance);
+    writeDataLED(num[distance]);
+    
+   }
+   else{
+    Serial.printf("Turn off \n");
+    writeDataLED(0xff);
+   }
    
    //backward();
    if (irrecv.decode(&results)) {          // Waiting for decoding
@@ -80,6 +91,9 @@ void loop() {
     else{
       //stopWheels();
     }
+    if (combatMode){
+      combat();
+    }
    /*
    // This is to just print out the LED lights in sequence
    for (int i = 0; i < 10; i++) {
@@ -89,6 +103,24 @@ void loop() {
   }
   delay(1000);   
   */
+  delay(1000);
+  
+}
+void combat(){
+  if(distance>9){
+    right();
+    inStop=false;
+  }
+  else{
+    if(inStop){
+      forward(); 
+    }
+    else{
+      stopWheels();
+      inStop=true;
+    }
+  }
+
   
 }
 // Last motion. 0 means stop, 1 means forward, 2 means back, 3 means left, 4 means right
@@ -193,22 +225,37 @@ void handleControl(unsigned long value) {
   buzzer(false);
   switch (value) {
     case 0xFF02FD:// Receive the number '0'
+      combatMode=false;
       forward();
       break;
     case 0xFFE01F:              // Receive the number '1'
+      combatMode=false;
       left();
       break;
     case 0xFF9867:              // Receive the number '2'
+      combatMode=false;
       backward();
       break;
     case 0xFF906F:              // Receive the number '3'
+      combatMode=false;
       right();
       break;
     case 0xFFA857: //This is play
+      combatMode=false;
       stopWheels();
       break;
+    case 0xFFA25D: // This is for combat, press power button
+      combatMode=!combatMode;
+      inStop=false;
+      //If i turned it off, stop the wheels
+      if (!combatMode){
+        stopWheels();
+      }
+      break;
     default:
-        lastMotion();
+        if (!combatMode){
+          lastMotion();
+        }
   }
 }
 //This is to write to led. SOURCED from example sketch
