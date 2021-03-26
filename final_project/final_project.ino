@@ -40,7 +40,22 @@ byte num[] = {
 
 bool combatMode=false;
 
+#include <ESP32Servo.h>
+Servo rightServo;
+Servo leftServo;
+
 void setup() {
+  //Attach servos
+  rightServo.setPeriodHertz(50);
+  rightServo.attach(5,500,2500);
+  leftServo.setPeriodHertz(50);
+  leftServo.attach(21,500,2500);
+  leftServo.write(90);
+  rightServo.write(90);
+  //closeGate();
+  //leftServo.write(60);
+  //rightServo.write(120);
+  
   // put your setup code here, to run once:
   Serial.begin(115200);
   pinMode(topLeftWheelPin1,OUTPUT); 
@@ -69,18 +84,18 @@ void loop() {
    //forward();
 
    distance = (double)ultrasonic.distanceInCentimeters() *  0.39370;
-   Serial.printf("Distance is: %din\n",distance);
+//   Serial.printf("Distance is: %din\n",distance);
    if (distance<=10 and distance>=0){
-    Serial.printf("Showing %d\n",distance);
+  //  Serial.printf("Showing %d\n",distance);
     writeDataLED(num[distance]);
     
    }
    else{
-    Serial.printf("Turn off \n");
+   // Serial.printf("Turn off \n");
     writeDataLED(0xff);
    }
    
-   //backward();
+   
    if (irrecv.decode(&results)) {          // Waiting for decoding
       serialPrintUint64(results.value, HEX);// Print out the decoded results
       Serial.println("");
@@ -103,7 +118,7 @@ void loop() {
   }
   delay(1000);   
   */
-  delay(1000);
+  //delay(1000);
   
 }
 void combat(){
@@ -112,6 +127,9 @@ void combat(){
     inStop=false;
   }
   else{
+    // I should stop if i find it. 
+    stopWheels();
+    /*
     if(inStop){
       forward(); 
     }
@@ -119,6 +137,7 @@ void combat(){
       stopWheels();
       inStop=true;
     }
+    */
   }
 
   
@@ -224,23 +243,23 @@ void handleControl(unsigned long value) {
   delay(50);
   buzzer(false);
   switch (value) {
-    case 0xFF02FD:// Receive the number '0'
+    case 0xFF02FD:// Pressed +
       combatMode=false;
       forward();
       break;
-    case 0xFFE01F:              // Receive the number '1'
+    case 0xFFE01F:              // Pressed reverse
       combatMode=false;
       left();
       break;
-    case 0xFF9867:              // Receive the number '2'
+    case 0xFF9867:              // Pressed -
       combatMode=false;
       backward();
       break;
-    case 0xFF906F:              // Receive the number '3'
+    case 0xFF906F:              // Pressed forward
       combatMode=false;
       right();
       break;
-    case 0xFFA857: //This is play
+    case 0xFFA857: // Pressed play
       combatMode=false;
       stopWheels();
       break;
@@ -252,6 +271,39 @@ void handleControl(unsigned long value) {
         stopWheels();
       }
       break;
+    case 0xFF6897: // 0 pressed, so do open
+     openGate();
+     break;
+     case 0xFFB04F: // C pressed, so I want to close
+     closeGate();
+     break;
+    // These are the slow directions:
+    case 0xFF18E7: //pressed 2, so slow forward
+      combatMode=false;
+      forward();
+      delay(200);
+      stopWheels();
+      break;
+    case 0xFF10EF: // Pressed 4, so slow left
+      combatMode=false;
+      left();
+      delay(200);
+      stopWheels();
+      break;
+   case 0xFF4AB5: // Pressed 8, so slow back
+      combatMode=false;
+      backward();
+      delay(200);
+      stopWheels();
+      break;
+  case 0xFF5AA5: // Pressed 6, so slow right
+      combatMode=false;
+      right();
+      delay(200);
+      stopWheels();
+      break;
+
+    
     default:
         if (!combatMode){
           lastMotion();
@@ -267,4 +319,29 @@ void writeDataLED(int value) {
   shiftOut(dataPin, clockPin, LSBFIRST, value);
   // Make latchPin output high level, then 74HC595 will update the data to parallel output
   digitalWrite(latchPin, HIGH);
+}
+void openGate(){
+  Serial.println("Open");
+  leftServo.write(90);
+  rightServo.write(90);
+  
+}
+void closeGate(){
+  /*
+  int temp=10;
+  //60,120
+  while (temp<40){
+  leftServo.write(90-temp);
+  rightServo.write(90+temp);
+  // Add delay so it doesnt close too fast
+  delay(200);
+  temp+=10;
+   
+  }
+  */
+  Serial.println("Close");
+  leftServo.write(60);
+  rightServo.write(120);
+  
+  
 }
