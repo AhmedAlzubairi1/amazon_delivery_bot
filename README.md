@@ -47,7 +47,7 @@ Go to manage libraries in Arduino IDE and install the following libraries:
 
 
 ## Setting up Wiring
-![Screenshot](robotPicture.JPG)
+![Screenshot](inside.JPG)
 
 Components used:
 
