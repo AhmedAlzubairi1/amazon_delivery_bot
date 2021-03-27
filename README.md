@@ -72,7 +72,7 @@ Esp32:
     - For the servos, set both the VCC and GND for both of them into the GND pin and v5 pin of the esp32. Set the signal pin for the left servo to pin 5 and the right servo to pin 21.
     - For the 74HC595, 7 segment display, and the resistors, please see page 168 on the C_tutorial.pdf file attached in the repo. The pdf file is the same file also mentioned on the last line of the sources section. The only difference in this layout is you need to make sure to use. The following image is the page in reference to quickly see the circuti:
     - 
-
+![Screenshot](circuit.png)
 ## Running the Program
 
 Run the megaservo file on your Arduino Mega, and run the esp32_client file on your esp32. That is all you need to Set up the program. To interact with the scultpure, please use the api. See instructions:
