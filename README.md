@@ -1,4 +1,6 @@
 # Final Project: Amazon Delivery Bot
+![Screenshot](robotPicture.JPG)
+
 ## Sources:
 Go to https://git.io/JTz3m to download the master file. 
 
@@ -45,6 +47,8 @@ Go to manage libraries in Arduino IDE and install the following libraries:
 
 
 ## Setting up Wiring
+![Screenshot](robotPicture.JPG)
+
 Components used:
 
   - ESP32-WROVER
