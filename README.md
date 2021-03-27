@@ -72,27 +72,21 @@ Esp32:
     - For the servos, set both the VCC and GND for both of them into the GND pin and v5 pin of the esp32. Set the signal pin for the left servo to pin 5 and the right servo to pin 21.
     - For the 74HC595, 7 segment display, and the resistors, please see page 168 on the C_tutorial.pdf file attached in the repo. The pdf file is the same file also mentioned on the last line of the sources section. The only difference in this layout is you need to make sure to use. The following image is the page in reference to quickly see the circuti:
     - 
-
+![Screenshot](circuit.png)
 ## Running the Program
 
-Run the megaservo file on your Arduino Mega, and run the esp32_client file on your esp32. That is all you need to Set up the program. To interact with the scultpure, please use the api. See instructions:
-
-Run the program by running:
-
-```
-node server.js
-```
-Then go to this website: http://165.227.76.232:3000/myuni and click the button. My uni is afa2135, so I went to http://165.227.76.232:3000/afa2135. 
-When you click the button, the rainbow LED would flash and the feathers of the sculputure will expand.
+Just click upload on the arduino IDE. 
 
 ## More Documentation
 
 The code has been very well documented through comments. See for more info. 
 
 ## Demo:
-https://www.youtube.com/watch?v=0ggWUWyJqHM&ab_channel=AhmedAlzubairi
-
+https://www.youtube.com/watch?v=p9yMJDwOi4E&t=2s&ab_channel=AhmedAlzubairi
 ## Bugs:
+Here are some of the bugs I noticed and possible fixes:
+    - If you ever encounter a huge deplay in the reaction of the controller, it is most likely due to delays you implemented into the code. 
+    - If the robot seems to be running really slow or acting weird in its reaciton, it is most likely due to power. A fix I found was using three 9V batteries as mention. 2 to power the motor drivers and 1 to power the esp32. Make sure good enough power is given to the esp32. Also make sure there is a common ground between the motor drivers and the esp32. This is why I mentioned to connect the gnd of the motor drivers into the gnd of the esp32 as well.
+    - If you encounter sitautions where your readings are really off or some of your sensors aren't working as shown, it is most likely due to the pin locations. Some pins on the esp32 have dedicated use cases and that may impact its functionality. To minmize these issues, use the exact same pin layout as I have.
 
-I initially used batteries instead of powering the microcontrollers with my computer, but I found it difficult to power everything, so I ended up just using my computer. 
-So if you try to use batteries, be warned that you would need one with enough power to handle everything.
+
